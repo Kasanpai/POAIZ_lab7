@@ -40,40 +40,6 @@ void generateAdjacencyList(Node** adjList, int N) {
     }
 }
 
-// Функция для сортировки списка смежности каждой вершины
-void sortAdjacencyList(Node** adjList, int N) {
-    for (int i = 0; i < N; i++) {
-        // Собираем все вершины для вершины i в массив
-        int count = 0;
-        Node* temp = adjList[i];
-        while (temp != NULL) {
-            count++;
-            temp = temp->next;
-        }
-
-        int* vertices = (int*)malloc(count * sizeof(int));
-        temp = adjList[i];
-        int index = 0;
-        while (temp != NULL) {
-            vertices[index++] = temp->vertex;
-            temp = temp->next;
-        }
-
-        // Сортируем массив вершин
-        qsort(vertices, count, sizeof(int), compare);
-
-        // Перезаписываем отсортированные вершины обратно в список смежности
-        temp = adjList[i];
-        index = 0;
-        while (temp != NULL) {
-            temp->vertex = vertices[index++];
-            temp = temp->next;
-        }
-
-        // Освобождаем память
-        free(vertices);
-    }
-}
 
 void printAdjacencyList(Node** adjList, int N) {
     printf("Список смежности:\n");
@@ -88,21 +54,29 @@ void printAdjacencyList(Node** adjList, int N) {
     }
 }
 
-// Функция обхода в глубину (DFS)
-void DFS(Node** adjList, int N, int* NUM, int v) {
-    // Помечаем вершину как посещенную
-    NUM[v] = 1;
-    // Выводим номер вершины
-    printf("%d ", v + 1);
+// Итеративная функция обхода в глубину (DFS) с использованием стека
+void DFS(Node** adjList, int N, int* NUM, int startVertex) {
+    int* stack = (int*)malloc(N * sizeof(int));  // Стек для хранения вершин
+    int top = -1;  // Индекс вершины в стеке
+    stack[++top] = startVertex;  // Начальная вершина
+    NUM[startVertex] = 1;  // Помечаем начальную вершину как посещенную
 
-    // Обходим всех соседей вершины v
-    Node* temp = adjList[v];
-    while (temp != NULL) {
-        if (NUM[temp->vertex] == 0) {
-            DFS(adjList, N, NUM, temp->vertex);
+    while (top != -1) {  // Пока стек не пуст
+        int v = stack[top--];  // Извлекаем вершину из стека
+        printf("%d ", v + 1);  // Выводим вершину
+
+        // Обрабатываем всех соседей вершины v
+        Node* temp = adjList[v];
+        while (temp != NULL) {
+            if (NUM[temp->vertex] == 0) {  // Если сосед еще не посещен
+                stack[++top] = temp->vertex;  // Добавляем соседа в стек
+                NUM[temp->vertex] = 1;  // Помечаем соседа как посещенного
+            }
+            temp = temp->next;
         }
-        temp = temp->next;
     }
+
+    free(stack);  // Освобождение памяти для стека
 }
 
 void DFS_All(Node** adjList, int N) {
@@ -143,8 +117,7 @@ int main() {
     // Генерация списка смежности
     generateAdjacencyList(adjList, N);
 
-    // Сортировка списка смежности для каждой вершины
-    sortAdjacencyList(adjList, N);
+
 
     // Вывод списка смежности на экран
     printAdjacencyList(adjList, N);
@@ -166,3 +139,4 @@ int main() {
 
     return 0;
 }
+
